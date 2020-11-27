@@ -38,6 +38,14 @@ const Home = () => {
     )
   }
 
+  const toUsd = (value) => {
+    return new Intl.NumberFormat("en", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 6,
+    }).format(value)
+  }
+
   let sortDirections = ["ascend", "descend", "ascend"]
 
   const columns = [
@@ -74,7 +82,7 @@ const Home = () => {
     {
       title: "Price",
       dataIndex: "current_price",
-      render: (price) => <span>${price}</span>,
+      render: (price) => <span>{toUsd(price)}</span>,
       sorter: (a, b) => a.current_price - b.current_price,
       sortDirections: sortDirections,
     },
