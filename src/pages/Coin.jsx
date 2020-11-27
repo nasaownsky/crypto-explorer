@@ -113,14 +113,14 @@ const Coin = (props) => {
                   <Input
                     size="large"
                     prefix={coin.symbol.toUpperCase()}
-                    defaultValue={coin.market_data.current_price.usd}
+                    defaultValue={1}
                     type="number"
                   />
                   ⇌
                   <Input
                     size="large"
                     prefix="$"
-                    defaultValue={1}
+                    defaultValue={coin.market_data.current_price.usd}
                     type="number"
                   />
                 </div>
