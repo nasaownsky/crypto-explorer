@@ -42,12 +42,21 @@ const Home = () => {
 
   const columns = [
     {
-      title: "Rank",
+      title: "#",
       dataIndex: "market_cap_rank",
       defaultSortOrder: "ascend",
       align: "center",
       sorter: (a, b) => a.market_cap_rank - b.market_cap_rank,
       sortDirections: sortDirections,
+    },
+    {
+      dataIndex: "image",
+      render: (image, data) => (
+        <img width="20px" src={data.image} alt={`${data.name} icon`} />
+      ),
+      width: "40px",
+      align: "right",
+      colSpan: 0,
     },
 
     {
@@ -55,12 +64,12 @@ const Home = () => {
       dataIndex: "name",
       render: (coin, data) => (
         <Link to={`/coins/${data.id}`}>
-          <img width="20px" src={data.image} alt={`${data.name} icon`}/> &nbsp;
           <b>{coin}</b>
         </Link>
       ),
       sorter: (a, b) => a.name.localeCompare(b.name),
       sortDirections: sortDirections,
+      colSpan: 2,
     },
     {
       title: "Price",
@@ -105,7 +114,11 @@ const Home = () => {
         title={() => (
           <span>
             Coins in order of Market Capitalization. Powered by{" "}
-            <a href="https://www.coingecko.com/en/api" target="_blank" rel="noreferrer">
+            <a
+              href="https://www.coingecko.com/en/api"
+              target="_blank"
+              rel="noreferrer"
+            >
               Coingecko API
             </a>
           </span>

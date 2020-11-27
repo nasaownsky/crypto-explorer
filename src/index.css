@@ -16,12 +16,7 @@ body {
   align-items: center;
 }
 
-.coin{
+.coin {
   min-height: 100vh;
   padding: 10px;
-}
-
-.container{
-  display: flex;
-  flex-wrap: wrap;
 }

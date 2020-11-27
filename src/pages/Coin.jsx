@@ -1,6 +1,6 @@
 import React from "react"
 import axios from "axios"
-import { Descriptions, Spin, Tag, Row, Col } from "antd"
+import { Descriptions, Spin, Tag, Row, Col, Space, Input } from "antd"
 import {
   LineChart,
   Line,
@@ -8,61 +8,13 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   Brush,
-  AreaChart,
-  Area,
   ResponsiveContainer,
 } from "recharts"
-import moment from 'moment';
+import moment from "moment"
 import Page404 from "./404"
 
-const data = [
-  {
-    name: "Page A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
-  },
-  {
-    name: "Page B",
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
-  },
-  {
-    name: "Page C",
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
-  },
-  {
-    name: "Page D",
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
-  },
-  {
-    name: "Page E",
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
-  },
-  {
-    name: "Page F",
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
-  },
-  {
-    name: "Page G",
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-]
-
-export const Coin = (props) => {
+const Coin = (props) => {
   const [coin, setCoin] = React.useState([])
   const [chart, setChart] = React.useState([])
   const [loading, setLoading] = React.useState(true)
@@ -82,17 +34,24 @@ export const Coin = (props) => {
       })
     axios
       .get(
-        `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=10`
+        `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=7`
       )
       .then(({ data }) => {
-        setChart(data)
+        setChart(data.prices.map(([date, price]) => ({ date, price })))
       })
   }, [])
 
-//   console.log(chart)
-//   const formatXAxis = (tickItem) => {
-//     return moment(tickItem).format("D MMM").toString()
-//   }
+  const toUsd = (value) => {
+    return new Intl.NumberFormat("en", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 6,
+    }).format(value)
+  }
+
+  //   const calculate = (amount) => {
+
+  //   }
 
   return error ? (
     <Page404 title={error} />
@@ -101,88 +60,126 @@ export const Coin = (props) => {
       <div className="coin">
         {loading === false && (
           <>
-            <h1>{coin.name}</h1>
-            <Row gutter={20}>
-              <Col flex="1 1 600px">
-                <p dangerouslySetInnerHTML={{ __html: coin.description.en }} />
+            <h1>
+              <Space align="center">
+                <img width="50px" src={coin.image.large} />
+                {coin.name}
+                <span>({coin.symbol.toUpperCase()})</span>
+              </Space>
+            </h1>
+            <Row gutter={[20, 20]}>
+              <Col flex="1 1 65%">
+                <h3>Price chart</h3>
+                <ResponsiveContainer width="100%" aspect={2}>
+                  <LineChart data={chart}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(tickItem) =>
+                        moment(tickItem).format("DD MMM")
+                      }
+                      interval="preserveStart"
+                      minTickGap={50}
+                    />
+                    <YAxis
+                      tickFormatter={(tickItem) => toUsd(tickItem)}
+                      axisLine={false}
+                      tickLine={false}
+                      mirror={true}
+                      domain={["dataMin", "auto"]}
+                      tickCount={7}
+                    />
+                    <Tooltip
+                      labelFormatter={(date) =>
+                        moment(date).format("ddd DD MMM YYYY hh:mm:ss")
+                      }
+                      formatter={(price) => toUsd(price)}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#1890FF"
+                      fill="#1890FF"
+                      name="Price"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </Col>
               <Col flex="1 1 300px">
+                <h3>Converter</h3>
+                <div style={{ textAlign: "center" }}>
+                  <Input
+                    size="large"
+                    prefix={coin.symbol.toUpperCase()}
+                    defaultValue={coin.market_data.current_price.usd}
+                    type="number"
+                  />
+                  ⇌
+                  <Input
+                    size="large"
+                    prefix="$"
+                    defaultValue={1}
+                    type="number"
+                  />
+                </div>
+                <br />
+                <h3>Summary</h3>
                 <Descriptions column={1} bordered size="small">
                   <Descriptions.Item label={`Price`}>
-                    ${coin.market_data.current_price.usd}
+                    {toUsd(coin.market_data.current_price.usd)}
                   </Descriptions.Item>
                   <Descriptions.Item label={`Market Cap`}>
-                    ${coin.market_data.market_cap.usd}
+                    {toUsd(coin.market_data.market_cap.usd)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Trading Volume">
-                    ${coin.market_data.total_volume.usd}
+                    {toUsd(coin.market_data.total_volume.usd)}
                   </Descriptions.Item>
                   <Descriptions.Item label="24 Low / 24 High">
-                    ${coin.market_data.low_24h.usd} / $
-                    {coin.market_data.high_24h.usd}
+                    {toUsd(coin.market_data.low_24h.usd)} /{" "}
+                    {toUsd(coin.market_data.high_24h.usd)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Market Cap Rank">
                     #{coin.market_data.market_cap_rank}
                   </Descriptions.Item>
                   <Descriptions.Item label="All-Time High">
-                    ${coin.market_data.ath.usd}&nbsp;
-                    <Tag
-                      color={
-                        coin.market_data.ath_change_percentage.usd.toFixed(1) <
-                        0
-                          ? "red"
-                          : "green"
-                      }
-                    >
-                      {coin.market_data.ath_change_percentage.usd.toFixed(1)}%
-                    </Tag>
+                    <Space>
+                      {toUsd(coin.market_data.ath.usd)}
+                      <Tag
+                        color={
+                          coin.market_data.ath_change_percentage.usd.toFixed(
+                            1
+                          ) < 0
+                            ? "red"
+                            : "green"
+                        }
+                      >
+                        {coin.market_data.ath_change_percentage.usd.toFixed(1)}%
+                      </Tag>
+                    </Space>
                   </Descriptions.Item>
                   <Descriptions.Item label="All-Time Low">
-                    ${coin.market_data.atl.usd}&nbsp;
-                    <Tag
-                      color={
-                        coin.market_data.atl_change_percentage.usd.toFixed(1) <
-                        0
-                          ? "red"
-                          : "green"
-                      }
-                    >
-                      {coin.market_data.atl_change_percentage.usd.toFixed(1)}%
-                    </Tag>
+                    <Space>
+                      {toUsd(coin.market_data.atl.usd)}
+                      <Tag
+                        color={
+                          coin.market_data.atl_change_percentage.usd.toFixed(
+                            1
+                          ) < 0
+                            ? "red"
+                            : "green"
+                        }
+                      >
+                        {coin.market_data.atl_change_percentage.usd.toFixed(1)}%
+                      </Tag>
+                    </Space>
                   </Descriptions.Item>
                 </Descriptions>
               </Col>
             </Row>
-            <br />
-            <ResponsiveContainer minWidth={400}  aspect={2}>
-              <LineChart
-                data={chart.prices}
-                margin={{
-                  top: 10,
-                  right: 30,
-                  left: 0,
-                  bottom: 0,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey={0}
-                //   tickFormatter={formatXAxis}
-                />
-                <YAxis unit="$" />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey={1}
-                  stroke="#1890FF"
-                  fill="#1890FF"
-                  name="Price"
-                  unit="$"
-                  dot={false}
-                />
-                <Brush />
-              </LineChart>
-            </ResponsiveContainer>
+            <h3>Description</h3>
+            <p dangerouslySetInnerHTML={{ __html: coin.description.en }} />
           </>
         )}
       </div>
