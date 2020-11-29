@@ -19,26 +19,42 @@ const Coin = (props) => {
   const [chart, setChart] = React.useState([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState("")
+  const [usd, setUsd] = React.useState(null)
+  const [crypto, setCrypto] = React.useState(1)
+
+  async function getCoin() {
+    try {
+      await axios
+        .get(
+          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}?localization=false`
+        )
+        .then(({ data }) => {
+          setCoin(data)
+          setUsd(data.market_data.current_price.usd)
+          setLoading(false)
+        })
+    } catch (error) {
+      console.error(setError(error.response.data.error))
+    }
+  }
+
+  async function getChart() {
+    try {
+      await axios
+        .get(
+          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=7`
+        )
+        .then(({ data }) => {
+          setChart(data.prices.map(([date, price]) => ({ date, price })))
+        })
+    } catch (error) {
+      console.error(error.response.data.error)
+    }
+  }
 
   React.useEffect(() => {
-    axios
-      .get(
-        `https://api.coingecko.com/api/v3/coins/${props.match.params.id}?localization=false`
-      )
-      .then(({ data }) => {
-        setCoin(data)
-        setLoading(false)
-      })
-      .catch((error) => {
-        setError(error.response.data.error)
-      })
-    axios
-      .get(
-        `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=7`
-      )
-      .then(({ data }) => {
-        setChart(data.prices.map(([date, price]) => ({ date, price })))
-      })
+    getCoin()
+    getChart()
   }, [])
 
   const toUsd = (value) => {
@@ -49,9 +65,17 @@ const Coin = (props) => {
     }).format(value)
   }
 
-  //   const calculate = (amount) => {
+  const calcUsd = (amount) => {
+    setCrypto(amount)
+    let result = amount * coin.market_data.current_price.usd
+    setUsd(result)
+  }
 
-  //   }
+  const calcCrypto = (amount) => {
+    setUsd(amount)
+    let result = amount / coin.market_data.current_price.usd
+    setCrypto(result)
+  }
 
   return error ? (
     <Page404 title={error} />
@@ -113,14 +137,17 @@ const Coin = (props) => {
                   <Input
                     size="large"
                     prefix={coin.symbol.toUpperCase()}
+                    value={crypto}
                     defaultValue={1}
+                    onChange={(e) => calcUsd(e.target.value)}
                     type="number"
                   />
                   ⇌
                   <Input
                     size="large"
                     prefix="$"
-                    defaultValue={coin.market_data.current_price.usd}
+                    value={usd}
+                    onChange={(e) => calcCrypto(e.target.value)}
                     type="number"
                   />
                 </div>

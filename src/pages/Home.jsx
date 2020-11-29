@@ -1,22 +1,30 @@
 import React from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import { Table, Tag } from "antd"
+import { Button, Table, Tag } from "antd"
 
 const Home = () => {
   const [coins, setCoins] = React.useState([])
   const [loading, setLoading] = React.useState(true)
   const [page, setPage] = React.useState(1)
 
+  async function getCoins() {
+    try {
+      await axios
+        .get(
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false&price_change_percentage=1h%2C24h%2C7d`
+        )
+        .then(({ data }) => {
+          setCoins(data)
+          setLoading(false)
+        })
+    } catch (error) {
+      console.error(error.response.data.error)
+    }
+  }
+
   React.useEffect(() => {
-    axios
-      .get(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false&price_change_percentage=1h%2C24h%2C7d`
-      )
-      .then(({ data }) => {
-        setCoins(data)
-        setLoading(false)
-      })
+    getCoins()
   }, [page])
 
   const handlePagination = (current) => {
@@ -60,7 +68,7 @@ const Home = () => {
     {
       dataIndex: "image",
       render: (image, data) => (
-        <img width="20px" src={data.image} alt={`${data.name} icon`} />
+        <img width="20px" src={image} alt={`${data.name} icon`} />
       ),
       width: "40px",
       align: "right",
@@ -120,7 +128,7 @@ const Home = () => {
       <Table
         size="middle"
         title={() => (
-          <span>
+          <>
             Coins in order of Market Capitalization. Powered by{" "}
             <a
               href="https://www.coingecko.com/en/api"
@@ -129,7 +137,14 @@ const Home = () => {
             >
               Coingecko API
             </a>
-          </span>
+            {/* <a
+              href="https://github.com/nasaownsky/crypto-explorer"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button size="small" type="primary" >View on GitHub</Button>
+            </a> */}
+          </>
         )}
         columns={columns}
         rowKey={(data) => data.id}
