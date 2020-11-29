@@ -1,6 +1,6 @@
 import React from "react"
 import axios from "axios"
-import { Descriptions, Spin, Tag, Row, Col, Space, Input } from "antd"
+import { Descriptions, Spin, Tag, Row, Col, Space, Input, Select } from "antd"
 import {
   LineChart,
   Line,
@@ -14,11 +14,14 @@ import {
 import moment from "moment"
 import Page404 from "./404"
 
+const { Option } = Select
+
 const Coin = (props) => {
   const [coin, setCoin] = React.useState([])
   const [chart, setChart] = React.useState([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState("")
+  const [day, setDay] = React.useState("7")
   const [usd, setUsd] = React.useState(null)
   const [crypto, setCrypto] = React.useState(1)
 
@@ -42,7 +45,7 @@ const Coin = (props) => {
     try {
       await axios
         .get(
-          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=7`
+          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=${day}`
         )
         .then(({ data }) => {
           setChart(data.prices.map(([date, price]) => ({ date, price })))
@@ -55,7 +58,7 @@ const Coin = (props) => {
   React.useEffect(() => {
     getCoin()
     getChart()
-  }, [])
+  }, [day])
 
   const toUsd = (value) => {
     return new Intl.NumberFormat("en", {
@@ -63,6 +66,20 @@ const Coin = (props) => {
       currency: "USD",
       maximumFractionDigits: 6,
     }).format(value)
+  }
+
+  const formatTime = (tickItem) => {
+    switch (day) {
+      case "1":
+        return moment(tickItem).format("ddd kk:mm")
+        break
+      case "max":
+        return moment(tickItem).format("MMM YYYY")
+        break
+      default:
+        return moment(tickItem).format("DD MMM")
+        break
+    }
   }
 
   const calcUsd = (amount) => {
@@ -93,15 +110,28 @@ const Coin = (props) => {
             </h1>
             <Row gutter={[20, 20]}>
               <Col flex="1 1 65%">
-                <h3>Price chart</h3>
+                <h3>
+                  <Space>
+                    Price chart
+                    <Select
+                      style={{ width: 100 }}
+                      size="small"
+                      defaultValue={day}
+                      onChange={(value) => setDay(value)}
+                    >
+                      <Option value="1">1 day</Option>
+                      <Option value="7">7 days</Option>
+                      <Option value="30">30 days</Option>
+                      <Option value="max">Max</Option>
+                    </Select>
+                  </Space>
+                </h3>
                 <ResponsiveContainer width="100%" aspect={2}>
                   <LineChart data={chart}>
                     <CartesianGrid vertical={false} />
                     <XAxis
                       dataKey="date"
-                      tickFormatter={(tickItem) =>
-                        moment(tickItem).format("DD MMM")
-                      }
+                      tickFormatter={(tickItem) => formatTime(tickItem)}
                       interval="preserveStart"
                       minTickGap={50}
                     />
@@ -115,7 +145,7 @@ const Coin = (props) => {
                     />
                     <Tooltip
                       labelFormatter={(date) =>
-                        moment(date).format("ddd DD MMM YYYY hh:mm:ss")
+                        moment(date).format("ddd DD MMM YYYY kk:mm:ss")
                       }
                       formatter={(price) => toUsd(price)}
                     />
@@ -141,6 +171,7 @@ const Coin = (props) => {
                     defaultValue={1}
                     onChange={(e) => calcUsd(e.target.value)}
                     type="number"
+                    min={0}
                   />
                   ⇌
                   <Input
@@ -149,6 +180,7 @@ const Coin = (props) => {
                     value={usd}
                     onChange={(e) => calcCrypto(e.target.value)}
                     type="number"
+                    min={0}
                   />
                 </div>
                 <br />
@@ -175,9 +207,7 @@ const Coin = (props) => {
                       {toUsd(coin.market_data.ath.usd)}
                       <Tag
                         color={
-                          coin.market_data.ath_change_percentage.usd.toFixed(
-                            1
-                          ) < 0
+                          coin.market_data.ath_change_percentage.usd < 0
                             ? "red"
                             : "green"
                         }
@@ -191,9 +221,7 @@ const Coin = (props) => {
                       {toUsd(coin.market_data.atl.usd)}
                       <Tag
                         color={
-                          coin.market_data.atl_change_percentage.usd.toFixed(
-                            1
-                          ) < 0
+                          coin.market_data.atl_change_percentage.usd < 0
                             ? "red"
                             : "green"
                         }
