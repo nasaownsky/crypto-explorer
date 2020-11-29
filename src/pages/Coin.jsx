@@ -172,6 +172,8 @@ const Coin = (props) => {
                     onChange={(e) => calcUsd(e.target.value)}
                     type="number"
                     min={0}
+                    allowClear
+                    inputMode="numeric"
                   />
                   ⇌
                   <Input
@@ -181,6 +183,8 @@ const Coin = (props) => {
                     onChange={(e) => calcCrypto(e.target.value)}
                     type="number"
                     min={0}
+                    allowClear
+                    inputMode="numeric"
                   />
                 </div>
                 <br />
