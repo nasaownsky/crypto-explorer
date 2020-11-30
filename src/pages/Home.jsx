@@ -1,29 +1,25 @@
 import React from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import { Button, Table, Tag } from "antd"
+import { Table, Tag } from "antd"
 
 const Home = () => {
   const [coins, setCoins] = React.useState([])
   const [loading, setLoading] = React.useState(true)
   const [page, setPage] = React.useState(1)
 
-  async function getCoins() {
-    try {
-      await axios
-        .get(
+  React.useEffect(() => {
+    async function getCoins() {
+      try {
+        const { data } = await axios.get(
           `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false&price_change_percentage=1h%2C24h%2C7d`
         )
-        .then(({ data }) => {
-          setCoins(data)
-          setLoading(false)
-        })
-    } catch (error) {
-      console.error(error.response.data.error)
+        setCoins(data)
+        setLoading(false)
+      } catch (error) {
+        console.error(error.response.data.error)
+      }
     }
-  }
-
-  React.useEffect(() => {
     getCoins()
   }, [page])
 
@@ -98,6 +94,7 @@ const Home = () => {
       title: "1h",
       dataIndex: "price_change_percentage_1h_in_currency",
       render: (change) => <Change change={change} />,
+      align: "center",
       sorter: (a, b) =>
         a.price_change_percentage_1h_in_currency -
         b.price_change_percentage_1h_in_currency,
@@ -106,6 +103,7 @@ const Home = () => {
     {
       title: "24h",
       dataIndex: "price_change_percentage_24h_in_currency",
+      align: "center",
       render: (change) => <Change change={change} />,
       sorter: (a, b) =>
         a.price_change_percentage_24h_in_currency -
@@ -115,6 +113,7 @@ const Home = () => {
     {
       title: "7d",
       dataIndex: "price_change_percentage_7d_in_currency",
+      align: "center",
       render: (change) => <Change change={change} />,
       sorter: (a, b) =>
         a.price_change_percentage_7d_in_currency -
@@ -137,13 +136,6 @@ const Home = () => {
             >
               Coingecko API
             </a>
-            {/* <a
-              href="https://github.com/nasaownsky/crypto-explorer"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Button size="small" type="primary" >View on GitHub</Button>
-            </a> */}
           </>
         )}
         columns={columns}

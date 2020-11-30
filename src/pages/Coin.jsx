@@ -1,6 +1,7 @@
 import React from "react"
 import axios from "axios"
 import { Descriptions, Spin, Tag, Row, Col, Space, Input, Select } from "antd"
+import { SwapOutlined } from "@ant-design/icons"
 import {
   LineChart,
   Line,
@@ -8,7 +9,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Brush,
   ResponsiveContainer,
 } from "recharts"
 import moment from "moment"
@@ -24,41 +24,35 @@ const Coin = (props) => {
   const [day, setDay] = React.useState("7")
   const [usd, setUsd] = React.useState(null)
   const [crypto, setCrypto] = React.useState(1)
-
-  async function getCoin() {
-    try {
-      await axios
-        .get(
-          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}?localization=false`
-        )
-        .then(({ data }) => {
-          setCoin(data)
-          setUsd(data.market_data.current_price.usd)
-          setLoading(false)
-        })
-    } catch (error) {
-      console.error(setError(error.response.data.error))
-    }
-  }
-
-  async function getChart() {
-    try {
-      await axios
-        .get(
-          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=${day}`
-        )
-        .then(({ data }) => {
-          setChart(data.prices.map(([date, price]) => ({ date, price })))
-        })
-    } catch (error) {
-      console.error(error.response.data.error)
-    }
-  }
+  const [action, setAction] = React.useState(true)
 
   React.useEffect(() => {
+    async function getCoin() {
+      try {
+        const { data } = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}?localization=false`
+        )
+        setCoin(data)
+        setUsd(data.market_data.current_price.usd)
+        setLoading(false)
+      } catch (error) {
+        console.error(setError(error.response.data.error))
+      }
+    }
+    async function getChart() {
+      try {
+        const { data } = await axios.get(
+          `https://api.coingecko.com/api/v3/coins/${props.match.params.id}/market_chart?vs_currency=usd&days=${day}`
+        )
+        setChart(data.prices.map(([date, price]) => ({ date, price })))
+      } catch (error) {
+        console.error(error.response.data.error)
+      }
+    }
+
     getCoin()
     getChart()
-  }, [day])
+  }, [props.match.params.id, day])
 
   const toUsd = (value) => {
     return new Intl.NumberFormat("en", {
@@ -72,13 +66,10 @@ const Coin = (props) => {
     switch (day) {
       case "1":
         return moment(tickItem).format("ddd kk:mm")
-        break
       case "max":
         return moment(tickItem).format("MMM YYYY")
-        break
       default:
         return moment(tickItem).format("DD MMM")
-        break
     }
   }
 
@@ -86,12 +77,27 @@ const Coin = (props) => {
     setCrypto(amount)
     let result = amount * coin.market_data.current_price.usd
     setUsd(result)
+    setAction(true)
   }
 
   const calcCrypto = (amount) => {
     setUsd(amount)
     let result = amount / coin.market_data.current_price.usd
     setCrypto(result)
+    setAction(false)
+  }
+
+  const revert = () => {
+    if (action) {
+      setUsd(crypto)
+      calcCrypto(crypto)
+      setAction(false)
+    }
+    if (!action) {
+      setCrypto(usd)
+      calcUsd(usd)
+      setAction(true)
+    }
   }
 
   return error ? (
@@ -103,7 +109,11 @@ const Coin = (props) => {
           <>
             <h1>
               <Space align="center">
-                <img width="50px" src={coin.image.large} />
+                <img
+                  width="50px"
+                  src={coin.image.large}
+                  alt={`${coin.name} icon`}
+                />
                 {coin.name}
                 <span>({coin.symbol.toUpperCase()})</span>
               </Space>
@@ -132,8 +142,8 @@ const Coin = (props) => {
                     <XAxis
                       dataKey="date"
                       tickFormatter={(tickItem) => formatTime(tickItem)}
-                      interval="preserveStart"
-                      minTickGap={50}
+                      interval="preserveStartEnd"
+                      minTickGap={30}
                     />
                     <YAxis
                       tickFormatter={(tickItem) => toUsd(tickItem)}
@@ -175,7 +185,10 @@ const Coin = (props) => {
                     allowClear
                     inputMode="numeric"
                   />
-                  ⇌
+                  <SwapOutlined
+                    style={{ padding: 10, fontSize: 16, color: "#1890FF" }}
+                    onClick={revert}
+                  />
                   <Input
                     size="large"
                     prefix="$"
@@ -238,7 +251,11 @@ const Coin = (props) => {
               </Col>
             </Row>
             <h3>Description</h3>
-            <p dangerouslySetInnerHTML={{ __html: coin.description.en }} />
+            {coin.description.en ? (
+              <p dangerouslySetInnerHTML={{ __html: coin.description.en }} />
+            ) : (
+              <p>No description available.</p>
+            )}
           </>
         )}
       </div>
