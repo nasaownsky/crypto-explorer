@@ -1,7 +1,10 @@
 import React from "react"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import { Table, Tag } from "antd"
+import { Table } from "antd"
+
+import { toUsd } from "../components/Summary"
+import ChangeTag from "../components/ChangeTag"
 
 const Home = () => {
   const [coins, setCoins] = React.useState([])
@@ -30,24 +33,6 @@ const Home = () => {
       top: 0,
       behavior: "smooth",
     })
-  }
-
-  const Change = ({ change }) => {
-    return change !== null ? (
-      <Tag color={change.toFixed(1) < 0 ? "red" : "green"}>
-        {change.toFixed(1)}%
-      </Tag>
-    ) : (
-      <span>--</span>
-    )
-  }
-
-  const toUsd = (value) => {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 6,
-    }).format(value)
   }
 
   let sortDirections = ["ascend", "descend", "ascend"]
@@ -93,7 +78,7 @@ const Home = () => {
     {
       title: "1h",
       dataIndex: "price_change_percentage_1h_in_currency",
-      render: (change) => <Change change={change} />,
+      render: (change) => <ChangeTag change={change} />,
       align: "center",
       sorter: (a, b) =>
         a.price_change_percentage_1h_in_currency -
@@ -104,7 +89,7 @@ const Home = () => {
       title: "24h",
       dataIndex: "price_change_percentage_24h_in_currency",
       align: "center",
-      render: (change) => <Change change={change} />,
+      render: (change) => <ChangeTag change={change} />,
       sorter: (a, b) =>
         a.price_change_percentage_24h_in_currency -
         b.price_change_percentage_24h_in_currency,
@@ -114,7 +99,7 @@ const Home = () => {
       title: "7d",
       dataIndex: "price_change_percentage_7d_in_currency",
       align: "center",
-      render: (change) => <Change change={change} />,
+      render: (change) => <ChangeTag change={change} />,
       sorter: (a, b) =>
         a.price_change_percentage_7d_in_currency -
         b.price_change_percentage_7d_in_currency,

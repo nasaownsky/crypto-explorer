@@ -4,9 +4,6 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.3.0",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
     "antd": "^4.8.4",
     "axios": "^0.21.0",
     "moment": "^2.29.1",
@@ -16,8 +13,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
     "recharts": "^1.8.5",
-    "redux": "^4.0.5",
-    "web-vitals": "^0.2.4"
+    "redux": "^4.0.5"
   },
   "scripts": {
     "start": "react-scripts start",
