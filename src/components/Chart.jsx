@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
-import { toUsd } from "./Summary";
+import { toUsd } from "./index";
 
 const Chart = (props) => {
   const formatTime = (tickItem) => {
@@ -31,7 +31,6 @@ const Chart = (props) => {
         <XAxis
           dataKey="date"
           tickFormatter={(tickItem) => formatTime(tickItem)}
-          //interval="preserveStartEnd"
           minTickGap={30}
         />
         <YAxis
@@ -56,6 +55,7 @@ const Chart = (props) => {
           name="Price"
           strokeWidth={2}
           dot={false}
+          animationBegin={50}
         />
       </LineChart>
     </ResponsiveContainer>

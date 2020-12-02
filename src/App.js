@@ -1,9 +1,7 @@
 import React from "react"
 import { Route, Switch } from "react-router-dom"
 
-import Home from "./pages/Home"
-import Coin from "./pages/Coin"
-import Page404 from "./pages/404"
+import { Home, Coin, Page404 } from "./pages"
 
 function App() {
   return (

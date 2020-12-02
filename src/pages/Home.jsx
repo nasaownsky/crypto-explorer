@@ -1,34 +1,41 @@
 import React from "react"
 import axios from "axios"
+import { useSelector, useDispatch } from "react-redux"
 import { Link } from "react-router-dom"
-import { Table } from "antd"
+import { Table, message } from "antd"
 
-import { toUsd } from "../components/Summary"
-import ChangeTag from "../components/ChangeTag"
+import { ChangeTag, toUsd } from "../components"
+import { setCoins, setPage } from "../redux/actions/coins"
 
 const Home = () => {
-  const [coins, setCoins] = React.useState([])
   const [loading, setLoading] = React.useState(true)
-  const [page, setPage] = React.useState(1)
+
+  const dispatch = useDispatch()
+  const { items, page } = useSelector(({ coins }) => {
+    return {
+      items: coins.items,
+      page: coins.page,
+    }
+  })
+
+  const api = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false&price_change_percentage=1h%2C24h%2C7d`
 
   React.useEffect(() => {
     async function getCoins() {
       try {
-        const { data } = await axios.get(
-          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=${page}&sparkline=false&price_change_percentage=1h%2C24h%2C7d`
-        )
-        setCoins(data)
+        const { data } = await axios.get(api)
+        dispatch(setCoins(data))
         setLoading(false)
       } catch (error) {
-        console.error(error.response.data.error)
+        message.error(error.response.data.error)
       }
     }
     getCoins()
-  }, [page])
+  }, [api, dispatch])
 
   const handlePagination = (current) => {
     setLoading(true)
-    setPage(current)
+    dispatch(setPage(current))
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -125,10 +132,11 @@ const Home = () => {
         )}
         columns={columns}
         rowKey={(data) => data.id}
-        dataSource={coins}
+        dataSource={items}
         loading={loading}
         pagination={{
           showSizeChanger: false,
+          current: page,
           pageSize: 100,
           total: 6000,
           onChange: (current) => handlePagination(current),

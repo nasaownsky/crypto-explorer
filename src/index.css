@@ -20,3 +20,9 @@ body {
   min-height: 100vh;
   padding: 10px;
 }
+
+.text-secondary {
+  float: right;
+  font-size: 12;
+  opacity: 0.5;
+}
