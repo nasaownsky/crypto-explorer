@@ -1,4 +1,14 @@
-@import "~antd/dist/antd.css";
+@import "~antd/dist/antd.css" screen;
+
+@import "~antd/dist/antd.dark.css"
+  screen and (prefers-color-scheme: dark);
+
+@media (prefers-color-scheme: dark) {
+  body,
+  .recharts-default-tooltip {
+    background: #141414 !important;
+  }
+}
 
 body {
   margin: 0;

@@ -138,7 +138,7 @@ const Home = () => {
           showSizeChanger: false,
           current: page,
           pageSize: 100,
-          total: 6000,
+          total: 6100,
           onChange: (current) => handlePagination(current),
         }}
         sticky

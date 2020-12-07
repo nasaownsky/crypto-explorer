@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
-import { toUsd } from "./index";
+import { toUsd } from "./index"
 
 const Chart = (props) => {
   const formatTime = (tickItem) => {
@@ -27,7 +27,7 @@ const Chart = (props) => {
   return (
     <ResponsiveContainer width="100%" aspect={2}>
       <LineChart data={props.data}>
-        <CartesianGrid vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#888" />
         <XAxis
           dataKey="date"
           tickFormatter={(tickItem) => formatTime(tickItem)}
@@ -40,6 +40,7 @@ const Chart = (props) => {
           mirror={true}
           domain={["dataMin", "auto"]}
           tickCount={7}
+          tick={{ fill: "red" }}
         />
         <Tooltip
           labelFormatter={(date) =>
